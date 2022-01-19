@@ -1,1 +1,74 @@
-TBD
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+      "parameters": {},
+      "variables": {},
+      
+      "resources": [
+
+          { "type": "Microsoft.EventGrid/systemTopics",
+            "apiVersion": "2020-04-01-preview",
+            "location": "eastus",
+            "id": "/subscriptions/964df7ca-3ba4-48b6-a695-1ed9db5723f8/resourceGroups/608-rmfw9461-deliver-iot-device-telemetry-to-other/providers/Microsoft.EventGrid/systemTopics/topic-okok",
+            "name": "labTopic",
+
+            "properties": {
+                "provisioningState": "Succeeded",
+                "source": "/subscriptions/4cedc5dd-e3ad-468d-bf66-32e31bdb9148/resourceGroups/608-rmfw9461-deliver-iot-device-telemetry-to-other/providers/Microsoft.Devices/IotHubs/iothub-jnlk7",
+                "topicType": "Microsoft.Devices.IoTHubs",
+                "metricResourceId": "623bdf36-2979-4006-809e-d727ef53a9d4"
+            }
+        }, 
+        {
+            "type": "Microsoft.EventGrid/eventSubscriptions",
+            "apiVersion": "2018-05-01-preview",
+            "scope": "/subscriptions/964df7ca-3ba4-48b6-a695-1ed9db5723f8/resourceGroups/608-rmfw9461-deliver-iot-device-telemetry-to-other/providers/Microsoft.Devices/IotHubs/iothub-guwp6",
+//For optional code-compare step: rows above this line will not be included in the JSON you copy-paste from the UI   
+            "name": "labSubscription",
+            "properties": {
+                "topic": "/subscriptions/964df7ca-3ba4-48b6-a695-1ed9db5723f8/resourceGroups/608-rmfw9461-deliver-iot-device-telemetry-to-other/providers/Microsoft.Devices/IotHubs/iothub-guwp6",
+                "destination": {
+                    "endpointType": "StorageQueue",
+                    "properties": {
+                        "resourceId": "/subscriptions/964df7ca-3ba4-48b6-a695-1ed9db5723f8/resourceGroups/608-rmfw9461-deliver-iot-device-telemetry-to-other/providers/Microsoft.Storage/storageAccounts/iotstorageguwp6",
+                        "queueName": "egqueue",
+                        "queueMessageTimeToLiveInSeconds": -1
+                    }
+                },
+                "filter": {
+                    "includedEventTypes": [
+                        "Microsoft.Devices.DeviceConnected",
+                        "Microsoft.Devices.DeviceDisconnected",
+                        "Microsoft.Devices.DeviceTelemetry"
+                    ],
+                    "advancedFilters": [
+                        {
+                            "operatorType": "StringBeginsWith",
+                            "key": "data.Properties.temperatureAlert",
+                            "values": [
+                                "true"
+                            ]
+                        }
+                    ],
+                    "enableAdvancedFilteringOnArrays": true
+                },
+                "labels": [
+                    "labelExample",
+                    "queueEndpoint"
+                ],
+                "eventDeliverySchema": "EventGridSchema",
+                "retryPolicy": {
+                    "maxDeliveryAttempts": 10,
+                    "eventTimeToLiveInMinutes": 180
+                },
+                "deadLetterDestination": {
+                    "endpointType": "StorageBlob",
+                    "properties": {
+                        "resourceId": "/subscriptions/964df7ca-3ba4-48b6-a695-1ed9db5723f8/resourceGroups/608-rmfw9461-deliver-iot-device-telemetry-to-other/providers/Microsoft.Storage/storageAccounts/iotstorageguwp6",
+                        "blobContainerName": "dead-letter"
+                    }
+                }
+            }
+        }
+      ]
+    }
